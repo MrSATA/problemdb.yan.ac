@@ -3,77 +3,139 @@ module IOL.Y2014.Indiv.P4 where
 import Data.Monoid
 import Data.String (fromString)
 
+import qualified Data.Text.Lazy.IO as T
+
+import Text.Blaze.Html.Renderer.Text
 import qualified Text.Blaze.Html5 as H
 import           Text.Blaze.Internal ()
 
 import Yanac.ProblemDB
 
+import qualified IOL.Y2014.Indiv.P4
+
 metadata :: Metadata
 metadata = Metadata
-  { title   = "基奥瓦语"
-  , authors = ["阿列克赛·佩古谢夫"]
-  , tags    = ["语音题", "小坑"]
+  { title   = "恩盖尼语"
+  , authors = ["阿尔图尔·谢梅纽克斯"]
+  , tags    = ["罗塞塔石碑", "中级题"]
   }
 
-kio :: Language
-kio = mkSimpleLang "kio" "Latn"
+enn :: Language
+enn = mkSimpleLang "enn" "Latn"
 
 document = do
   section "materials" $ do
-    par $  "以下为一些基奥瓦语名词的单数，双数和复数形式及其汉语翻译。"
-        <> "表中名词均有三种形式，但没有全部列出。"
-    H.table $ do
-      H.thead $ H.tr $ H.th "单数" <> H.th "双数" <> H.th "复数" <> H.th "翻译"
-      H.tbody $ mapM_ renderRow table
+    par "以下为恩盖尼语的几段短篇对话及其汉语翻译："
+    let dterm' = dterm `in_` enn
+    let render x = dgroup (dterm' $ text (ennq x) <> H.wbr <> text (enna x))
+                          (dvalue $ text (cmnq x) <> H.wbr <> text (cmna x))
+    list `countOn` "rosseta" $ listify $ map render mainCorpus
 
-  section "assignment" $ do
-    par $ "在带问号的空格内填上词的相应形式。"
+  section "assignment" $ list `countOn` "assignments" $ do
+    assignment1
+    assignment2
+    assignment3
 
   section "note" $ do
-    par "基奥瓦语属于基奥瓦－塔诺安语系。这是一种濒危语言，只有美国俄克拉荷马州的数百人仍在使用。"
-    let alt = H.i `in_` kio
-    par $  "以上给出的基奥瓦语的词采用简化转写法。"
-        <> alt "k’, t’, p’, kh, ph, th"
-        <> "是辅音；"
-        <> alt "ɔ"
-        <> "是一个元音。"
+    par "恩盖尼语属于贝努埃－刚果语系。在尼日利亚，大约两万人使用该语言。"
+    let alt = H.i `in_` enn
+    par $  "一个词的首个元音下面的标记"
+        <> alt "◌̣"
+        <> "表明该词的所有元音发音时舌位都要稍微降低。"
+        <> "标记"
+        <> alt "◌́, ◌̀, ◌̂"
+        <> "分别表示高、低、降调；如果以上标记均不出现，这个音节就发中调。"
 
-renderRow (Row single dual plural cmn) = H.tr $ do
-  mapM_ renderKiowa [single, dual, plural]
-  H.td $ fromString cmn
+assignment1 = item $ do
+  par "翻译成汉语："
+  let render x = text (ennq x) <> H.wbr <> text (enna x)
+  list `countOn` "rosseta" $ listify $ map render toCmn
+
+  let alt = H.i `in_` enn
+  par $  "这里还有恩盖尼语的一个答句，但相应的问句没有给出："
+      <> H.br
+      <> alt "ozyi ânò wei ga ạmó gbunono edèì."
+      <> H.br
+      <> "翻译成汉语。如果译法不止一种，请全部写出，并解释你这样翻译的理由。"
+
+assignment2 = item $ do
+  par "翻译成恩盖尼语："
+  list `countOn` "rosseta" $ listify $ map render toEnn
   where
-    renderKiowa CellNA = H.td `of_` "not-applicable" $ ""
-    renderKiowa ToFill = H.td `in_` kio $ ""
-    renderKiowa (CellLit x) = H.td `in_` kio $ fromString x
+    render x = text (cmnq x) <> H.wbr <> text (cmna x)
 
-data Row = Row
-  { single :: CellContent
-  , dual   :: CellContent
-  , plural :: CellContent
-  , cmn    :: String
+assignment3 = item $ do
+  par $  "假设你要编写一部恩盖尼词典，那么表示"
+      <> mention "小偷" <> "和" <> mention "姑娘"
+      <> "的词的基本形式分别是什么？解释你的答案。"
+
+data Sentence = Sentence
+  { ennq :: String
+  , enna :: String
+  , cmnq :: String
+  , cmna :: String
   }
 
-table =
-  [ Row "adɔ"        "a"          "a"           "树"
-  , Row "matʰɔnsjan" "matʰɔnsjan" "matʰɔnsjadɔ" "小女孩"
-  , Row "k’ɔ"        "k’ɔ"        "k’ɔgɔ"       "刀"
-  , Row "tʰot’olagɔ" "tʰot’ola"   "tʰot’olagɔ"  "橙子"
-  , Row "aufi"       CellNA       "aufigɔ"      "鱼"
-  , Row "pʰjaboadɔ"  CellNA       "pʰjaboa"     "路灯"
-  , Row "matʰɔn"     CellNA       "matʰɔdɔ"     "姑娘"
-  , Row "k’ɔnbohodɔ" CellNA       "k’ɔnbohon"   "帽子"
-  , Row "t’ɔ"        CellNA       "t’ɔgɔ"       "勺子"
-  , Row CellNA       CellNA       "e"           "面包"
-  , Row "alɔsɔhjegɔ" ToFill       "alɔsɔhjegɔ"  "李子"
-  , Row ToFill       "tsegun"     "tsegudɔ"     "狗"
-  , Row "alɔguk’ogɔ" "alɔguk’o"   ToFill        "柠檬"
-  , Row ToFill       "k’apʰtʰɔ"   "k’apʰtʰɔgɔ"  "老汉"
-  , Row "kʰɔdɔ"      "kʰɔ"        ToFill        "毯子"
-  , Row "k’ɔdɔ"      ToFill       "k’ɔdɔ"       "西红柿"
-  , Row ToFill       "alɔ"        ToFill        "苹果"
-  , Row ToFill       "pʰɔ"        ToFill        "野牛"
-  , Row ToFill       ToFill       "sadɔ"        "儿童"
-  , Row "ɔlsun"      ToFill       ToFill        "梳子"
-  , Row ToFill       "pitso"      ToFill        "叉子"
-  , Row ToFill       "tʰɔpʰpaa"   ToFill        "椅子"
+mainCorpus =
+  [ Sentence
+      "edèì âno nwạ́sesè ozyí lẹlemù à?"
+      "edèì ânò wei ga òkí nwạsese ozyí lẹlemù."
+      "这一个男人会(将来时)吓到[这]受骗的小偷吗？"
+      "这一个男人说他{sub: 这一个男人}不会(将来时)吓到[这]受骗的小偷。"
+  , Sentence
+      "ạvùràmù kịnono amemùrè ânò à?"
+      "ạvùràmù wei ga òkì kịnono amemùrè ânò."
+      "[这]女人长(过去时)得像这一个姑娘吗？"
+      "[这]女人说她{sub: [这]女人}长(过去时)得像这一个姑娘。"
+  , Sentence
+      "ạmó lẹlemù ậnó wuese ạvùràmù à?"
+      "ạmodhyòmù wei ga ò wuese ạvùràmù."
+      "这一个受骗的儿童没有杀[这]女人吗？"
+      "[这]青年说他{sub: 这一个受骗的儿童}杀了[这]女人。"
+  , Sentence
+      "edèí dhia gbúnonò ạmò à?"
+      "ạvùràmú kofilomù wei ga o gbúnonò ạmò."
+      "[这]坏男人会(将来时)治好[这]儿童吗？"
+      "[这]咳嗽的女人说他{sub: [这]坏男人}会(将来时)治好[这]儿童。"
+  , Sentence
+      "amemùré dhiá kịnono opilopo ânò à?"
+      "ạvùràmù wei ga ọ́ kịnono opilopo ânò."
+      "[这]坏姑娘长(过去时)得不像这一头猪吗？"
+      "[这]女人说她{sub: [这]坏姑娘}长(过去时)得不像这一头猪。"
+  , Sentence
+      "ozyì gbunono okàá nụamù ậnò à?"
+      "ozyì wei ga òkí gbunono okàá nụamù ậnò."
+      "[这]小偷治好了这一个挨了打的老汉吗？"
+      "[这]小偷说他{sub: [这]小偷}没有治好这一个挨了打的老汉。"
+  , Sentence
+      "ozyi âno kị́nonò edèí kofilomù à?"
+      "ạmò ậnò wei ga ọ́ kịnono edèí kofilomù."
+      "这一个小偷会(将来时)长得像[这]咳嗽的男人吗？"
+      "这一个儿童说他{sub: 这一个小偷}不会(将来时)长得像[这]咳嗽的男人。"
+  ]
+
+toCmn =
+  [ Sentence
+      "edèì ânò nwạsese ozyi à?"
+      "amemùrè wei ga ọ̀ nwạsese ozyi."
+      "这一个男人吓到了[这]小偷吗？"
+      "[这]姑娘说他{sub: 这一个男人}吓到了[这]小偷。"
+  , Sentence
+      "amemùré lẹlemu dhúnenè ạmodhyòmù ậnò à?"
+      "amemùré lẹlemu wei ga òki dhúnenè ạmodhyòmù ậnò."
+      "[这]受骗的姑娘会(将来时)杀这一个青年吗？"
+      "[这]受骗的姑娘说她{sub: [这]受骗的姑娘}会(将来时)杀这一个青年。"
+  ]
+
+toEnn =
+  [ Sentence
+      "okàa kị́nonò ạmodhyòmú kofilomù ânò à?"
+      "ạmò wei ga ọ́ kịnono ạmodhyòmú kofilomù ânò."
+      "[这]老汉会(将来时)长得像这一个咳嗽的青年吗？"
+      "[这]儿童说他{sub: [这]老汉}不会(将来时)长得像这一个咳嗽的青年。"
+  , Sentence
+      "ạvùràmú nụamù ậnó nwạsese edèì à?"
+      "ạvùràmú nụamù ậnò wei ga òkí nwạsese edèì."
+      "这一个挨了打的女人没有吓到[这]男人吗？"
+      "这一个挨了打的女人说她{sub: 这一个挨了打的女人}没有吓到[这]男人。"
   ]
