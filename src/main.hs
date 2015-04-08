@@ -1,7 +1,15 @@
 module Main where
 
 import Text.Blaze.Html.Renderer.Text
-import qualified Data.Text.Lazy.IO as T
-import qualified IOL.Y2014.Indiv.P2 as Problem
+import Yanac.ProblemDB
 
-main = T.putStr $ renderHtml Problem.document
+import qualified Data.Text.Lazy.IO as T
+import qualified IOL.Y2014.Indiv.P4 as Problem
+
+document = do
+  section "materials"   Problem.materials
+  section "assignments" Problem.assignments
+  section "notes"       Problem.notes
+
+
+main = T.putStr $ renderHtml document

@@ -1,7 +1,11 @@
-module IOL.Y2014.Indiv.P4 where
+module IOL.Y2014.Indiv.P4
+  ( metadata
+  , materials
+  , assignments
+  , notes
+  ) where
 
 import Data.Monoid
-import Data.String (fromString)
 
 import qualified Data.Text.Lazy.IO as T
 
@@ -10,8 +14,6 @@ import qualified Text.Blaze.Html5 as H
 import           Text.Blaze.Internal ()
 
 import Yanac.ProblemDB
-
-import qualified IOL.Y2014.Indiv.P4
 
 metadata :: Metadata
 metadata = Metadata
@@ -23,30 +25,16 @@ metadata = Metadata
 enn :: Language
 enn = mkSimpleLang "enn" "Latn"
 
-document = do
-  section "materials" $ do
-    par "以下为恩盖尼语的几段短篇对话及其汉语翻译："
-    let dterm' = dterm `in_` enn
-    let render x = dgroup (dterm' $ text (ennq x) <> H.wbr <> text (enna x))
-                          (dvalue $ text (cmnq x) <> H.wbr <> text (cmna x))
-    list `countOn` "rosseta" $ listify $ map render mainCorpus
+materials = do
+  par "以下为恩盖尼语的几段短篇对话及其汉语翻译："
+  let dterm' = dterm `in_` enn
+  let render x = dgroup (dterm' $ text (ennq x) <> H.wbr <> text (enna x))
+                        (dvalue $ text (cmnq x) <> H.wbr <> text (cmna x))
+  list `countOn` "rosseta" $ listify $ map render mainCorpus
 
-  section "assignment" $ list `countOn` "assignments" $ do
-    assignment1
-    assignment2
-    assignment3
+assignments = list `countOn` "assignments" $ asg1 >> asg2 >> asg3
 
-  section "note" $ do
-    par "恩盖尼语属于贝努埃－刚果语系。在尼日利亚，大约两万人使用该语言。"
-    let alt = H.i `in_` enn
-    par $  "一个词的首个元音下面的标记"
-        <> alt "◌̣"
-        <> "表明该词的所有元音发音时舌位都要稍微降低。"
-        <> "标记"
-        <> alt "◌́, ◌̀, ◌̂"
-        <> "分别表示高、低、降调；如果以上标记均不出现，这个音节就发中调。"
-
-assignment1 = item $ do
+asg1 = item $ do
   par "翻译成汉语："
   let render x = text (ennq x) <> H.wbr <> text (enna x)
   list `countOn` "rosseta" $ listify $ map render toCmn
@@ -58,16 +46,26 @@ assignment1 = item $ do
       <> H.br
       <> "翻译成汉语。如果译法不止一种，请全部写出，并解释你这样翻译的理由。"
 
-assignment2 = item $ do
+asg2 = item $ do
   par "翻译成恩盖尼语："
   list `countOn` "rosseta" $ listify $ map render toEnn
   where
     render x = text (cmnq x) <> H.wbr <> text (cmna x)
 
-assignment3 = item $ do
+asg3 = item $ do
   par $  "假设你要编写一部恩盖尼词典，那么表示"
       <> mention "小偷" <> "和" <> mention "姑娘"
       <> "的词的基本形式分别是什么？解释你的答案。"
+
+notes = do
+  par "恩盖尼语属于贝努埃－刚果语系。在尼日利亚，大约两万人使用该语言。"
+  let alt = H.i `in_` enn
+  par $  "一个词的首个元音下面的标记"
+      <> alt "◌̣"
+      <> "表明该词的所有元音发音时舌位都要稍微降低。"
+      <> "标记"
+      <> alt "◌́, ◌̀, ◌̂"
+      <> "分别表示高、低、降调；如果以上标记均不出现，这个音节就发中调。"
 
 data Sentence = Sentence
   { ennq :: String

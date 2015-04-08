@@ -1,4 +1,9 @@
-module IOL.Y2014.Indiv.P2 where
+module IOL.Y2014.Indiv.P2
+  ( metadata
+  , materials
+  , assignments
+  , notes
+  ) where
 
 import Data.Monoid
 import Data.String (fromString)
@@ -18,25 +23,24 @@ metadata = Metadata
 kio :: Language
 kio = mkSimpleLang "kio" "Latn"
 
-document = do
-  section "materials" $ do
-    par $  "以下为一些基奥瓦语名词的单数，双数和复数形式及其汉语翻译。"
-        <> "表中名词均有三种形式，但没有全部列出。"
-    H.table $ do
-      H.thead $ H.tr $ H.th "单数" <> H.th "双数" <> H.th "复数" <> H.th "翻译"
-      H.tbody $ mapM_ renderRow table
+materials = do
+  par $ "以下为一些基奥瓦语名词的单数，双数和复数形式及其汉语翻译。"
+      <>"表中名词均有三种形式，但没有全部列出。"
+  H.table $ do
+    H.thead $ H.tr $ H.th "单数" <> H.th "双数" <> H.th "复数" <> H.th "翻译"
+    H.tbody $ mapM_ renderRow table
 
-  section "assignment" $ do
-    par $ "在带问号的空格内填上词的相应形式。"
+assignments = do
+  par $ "在带问号的空格内填上词的相应形式。"
 
-  section "note" $ do
-    par "基奥瓦语属于基奥瓦－塔诺安语系。这是一种濒危语言，只有美国俄克拉荷马州的数百人仍在使用。"
-    let alt = H.i `in_` kio
-    par $  "以上给出的基奥瓦语的词采用简化转写法。"
-        <> alt "k’, t’, p’, kh, ph, th"
-        <> "是辅音；"
-        <> alt "ɔ"
-        <> "是一个元音。"
+notes = do
+  par "基奥瓦语属于基奥瓦－塔诺安语系。这是一种濒危语言，只有美国俄克拉荷马州的数百人仍在使用。"
+  let alt = H.i `in_` kio
+  par $  "以上给出的基奥瓦语的词采用简化转写法。"
+      <> alt "k’, t’, p’, kh, ph, th"
+      <> "是辅音；"
+      <> alt "ɔ"
+      <> "是一个元音。"
 
 renderRow (Row single dual plural cmn) = H.tr $ do
   mapM_ renderKiowa [single, dual, plural]
